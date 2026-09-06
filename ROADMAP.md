@@ -338,3 +338,16 @@ uvicorn 05_real_world_mini_project:app --reload
 ---
 
 > **Remember:** You already know how to build APIs, handle requests, manage state, and think in systems. That's 50% of AI engineering. The other 50% is understanding what LLMs can and can't do, and building systems that compensate for their limitations. You're not starting from scratch — you're adding a powerful new layer to skills you already have.
+
+
+
+
+$ pip install fastapi uvicorn openai python-dotenv
+pip freeze > requirements.txt
+uvicorn main:app --reload
+from openai import OpenAI
+
+client = OpenAI(
+    api_key=os.getenv("GROQ_API_KEY"),
+    base_url="https://api.groq.com/openai/v1"
+)
