@@ -10,22 +10,8 @@ from app.schemas import ChatRequest, ChatResponse
 def generate_reply(request: ChatRequest) -> ChatResponse:
 
     # 1. Get or create conversation
-    if request.conversation_id:
-
-        conversation_id = request.conversation_id
-
-        try:
-            history = get_conversation(conversation_id)
-
-        except KeyError:
-            raise ValueError("Conversation not found")
-
-    else:
-
-        conversation_id = create_conversation()
-
-        history = get_conversation(conversation_id)
-
+    conversation_id= request.conversation_id or create_conversation()
+    print(f"check{conversation_id}")
     # 2. Check cache
     cached_response = get_cached_response(request.message)
 
@@ -80,22 +66,7 @@ def generate_reply(request: ChatRequest) -> ChatResponse:
 def stream_reply(request: ChatRequest):
 
     # 1. Get or create conversation
-    if request.conversation_id:
-
-        conversation_id = request.conversation_id
-
-        try:
-            history = get_conversation(conversation_id)
-
-        except KeyError:
-            raise ValueError("Conversation not found")
-
-    else:
-
-        conversation_id = create_conversation()
-
-        history = get_conversation(conversation_id)
-
+    conversation_id=request.conversation_id or  create_conversation()
     # 2. Add user message
     add_message(conversation_id, "user", request.message)
 
