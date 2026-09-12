@@ -351,3 +351,61 @@ client = OpenAI(
     api_key=os.getenv("GROQ_API_KEY"),
     base_url="https://api.groq.com/openai/v1"
 )
+
+
+PHASE 1 — Backend Foundation
+Task 1   Smart Reply API
+Task 2   Streaming / SSE
+Task 3   Response Caching
+Task 4   Error Handling & Exception Architecture
+Task 5   Logging
+Task 6   Testing with pytest
+Task 7   Docker + Production Setup
+
+              ↓
+
+PHASE 2 — LLM Engineering
+Task 8   Prompt Engineering
+Task 9   Structured Outputs
+Task 10  Token & Cost Management
+Task 11  Model Selection / Fallbacks
+Task 12  Conversation Memory
+Task 13  Multi-turn Chat
+Task 14  Rate Limiting
+
+              ↓
+
+PHASE 3 — RAG
+Task 15  Document Ingestion
+Task 16  Text Chunking
+Task 17  Embeddings
+Task 18  Vector Database
+Task 19  Similarity Search
+Task 20  Build RAG Pipeline
+Task 21  RAG API
+Task 22  RAG Evaluation
+
+              ↓
+
+PHASE 4 — Advanced GenAI
+Task 23  Tool Calling
+Task 24  Function Calling
+Task 25  AI Agents
+Task 26  Agent Memory
+Task 27  Multi-step Agents
+Task 28  LangGraph
+
+              ↓
+
+PHASE 5 — Production AI
+Task 29  Authentication & Authorization
+Task 30  PostgreSQL + SQLAlchemy
+Task 31  Redis
+Task 32  Background Jobs
+Task 33  Observability / Monitoring
+Task 34  AI Evaluation
+Task 35  Deployment + Cloud
+
+              ↓
+
+       🚀 GENAI ENGINEER PROJECT

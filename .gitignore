@@ -1,0 +1,40 @@
+# Python virtual environments
+venv/
+.venv/
+env/
+.env/
+
+# Environment variables
+.env
+*.env
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+*.egg
+
+# Jupyter notebooks checkpoints
+.ipynb_checkpoints/
+
+# VS Code
+.vscode/
+
+# Kiro IDE
+.kiro/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Practice folder (local only)
+myself_practice/venv/
+myself_practice/.env
+myself_practice/

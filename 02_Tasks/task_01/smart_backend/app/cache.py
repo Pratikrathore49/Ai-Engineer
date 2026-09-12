@@ -2,7 +2,6 @@ import hashlib
 
 from app.schemas import ChatResponse
 
-
 # In-memory cache
 _cache: dict[str, ChatResponse] = {}
 
@@ -17,9 +16,7 @@ def create_cache_key(message: str) -> str:
     """
     normalized_message = message.strip().lower()
 
-    return hashlib.sha256(
-        normalized_message.encode("utf-8")
-    ).hexdigest()
+    return hashlib.sha256(normalized_message.encode("utf-8")).hexdigest()
 
 
 def get_cached_response(message: str) -> ChatResponse | None:
@@ -38,10 +35,7 @@ def get_cached_response(message: str) -> ChatResponse | None:
     return None
 
 
-def set_cached_response(
-    message: str,
-    response: ChatResponse
-) -> None:
+def set_cached_response(message: str, response: ChatResponse) -> None:
     """
     Store an LLM response in the cache.
     """
