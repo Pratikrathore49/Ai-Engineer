@@ -1,8 +1,11 @@
-from pydantic import BaseModel, Field, field_validator
-
+from pydantic import BaseModel,Field,field_validator
 
 class ChatRequest(BaseModel):
-    message: str = Field(..., min_length=1, max_length=2000)
+    message:str=Field(
+        ...,
+        min_length=1,
+        max_length=2000
+    )
 
     conversation_id: str | None = None
 
@@ -16,17 +19,16 @@ class ChatRequest(BaseModel):
 
         return value
 
-
 class ChatResponse(BaseModel):
-    reply: str
-    input_tokens: int
-    output_tokens: int
-    model: str
-    cached: bool
-    conversation_id: str
-
+    conversation_id:str
+    reply:str
+    input_tokens:int
+    output_tokens:int
+    model:str
+    cached:bool
+    tool_used:bool
 
 class CacheStats(BaseModel):
-    total_items: int
-    cache_hits: int
-    cache_misses: int
+    total_items:int
+    cache_hits:int
+    cache_misses:int
