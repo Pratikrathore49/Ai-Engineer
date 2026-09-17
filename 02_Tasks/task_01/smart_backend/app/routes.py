@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from fastapi.responses import StreamingResponse
 from openai import OpenAIError
 
@@ -10,7 +10,9 @@ from app.schemas import ChatRequest, ChatResponse, CacheStats
 
 from app.services import generate_reply, stream_reply
 
-router = APIRouter()
+from app.auth import verify_api_key
+
+router = APIRouter(dependencies=[Depends(verify_api_key)])
 
 
 @router.post("/chat", response_model=ChatResponse)

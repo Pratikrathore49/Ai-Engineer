@@ -91,14 +91,18 @@ WEATHER_TOOL = {
     }
 }
 
+MOCK_WEATHER = {
+    "london": "15°C, rainy",
+    "tokyo": "28°C, sunny",
+    "new york": "22°C, cloudy",
+}
 
 def get_weather(city: str) -> str:
     """
     Return mock weather data for a city.
     """
 
-    return f"{city}: 18°C, partly cloudy"
-
+    return MOCK_WEATHER.get(city.lower(),f"{city}: 20°c, Clear skies")
 
 # ============================================================
 # TOOL 3: WEB SEARCH
