@@ -1,0 +1,16 @@
+"""Sample golden evaluation set.
+
+Fields:
+  query                  - user question
+  relevant_chunk_ids     - golden chunk ids (fill after your own indexing)
+  reference_answer       - expert reference (used for answer correctness/relevance)
+
+Replace `relevant_chunk_ids` with the actual chunk ids produced when you
+index your own corpus. The retrieval metric relies on those ids.
+"""
+
+{"query": "What is the leave policy?", "relevant_chunk_ids": [], "reference_answer": "Employees earn 24 days of earned leave per year."}
+{"query": "How many sick days are allowed?", "relevant_chunk_ids": [], "reference_answer": "12 sick days per year, from the first day of joining."}
+{"query": "Can leave be carried forward?", "relevant_chunk_ids": [], "reference_answer": "Up to 10 days may be carried forward."}
+{"query": "What is the salary revision schedule?", "relevant_chunk_ids": [], "reference_answer": "Annual revision every April based on appraisal."}
+{"query": "Tell me a joke", "relevant_chunk_ids": [], "reference_answer": "Not in documents -> should trigger don't-know behavior."}
