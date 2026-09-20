@@ -1,28 +1,42 @@
-import os 
+# app/auth.py
 
-from dotenv import load_dotenv
-from fastapi import Header, HTTPException
+import logging
+import os
 
-load_dotenv()
+from fastapi import Header, HTTPException, Request
 
-VALID_API_KEYS =[
+logger = logging.getLogger(__name__)
+
+VALID_API_KEYS = {
     key.strip()
-    for key in os.getenv("SECURITY_API_KEYS","").split(",")
+    for key in os.getenv("SECURITY_API_KEYS", "").split(",")
     if key.strip()
-]
+}
+if not VALID_API_KEYS:
+    logger.warning("No API key configured - all requests will be rejected")
 
 def verify_api_key(
-    api_key:str | None = Header(
+    request: Request,
+    api_key: str | None = Header(
         default=None,
-        alias="X-API_Key"
+        alias="X-API-Key"
     )
 ):
+    client_ip = request.client.host if request.client else "unknown"
+
     if api_key is None:
-        raise HTTPException(status_code=401,details="X-API-Key header is required")
-    
-    if api_key not in VALID_API_KEYS:
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid API key"
+        logger.warning(
+            "Auth failure | ip=%s | reason=missing X-API-Key header",
+            client_ip
         )
+        raise HTTPException(status_code=401, detail="X-API-Key header is required")
+
+    if api_key not in VALID_API_KEYS:
+        logger.warning(
+            "Auth failure | ip=%s | reason=invalid API key",
+            client_ip
+        )
+        raise HTTPException(status_code=401, detail="Invalid API key")
+
+    logger.debug("Auth success | ip=%s", client_ip)
     return api_key
