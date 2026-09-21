@@ -39,4 +39,5 @@ def verify_api_key(
         raise HTTPException(status_code=401, detail="Invalid API key")
 
     logger.debug("Auth success | ip=%s", client_ip)
+    request.state.api_key = api_key
     return api_key

@@ -11,12 +11,13 @@ from app.cache import get_cache_stats
 from app.conversations import get_conversation
 from app.schemas import ChatRequest, ChatResponse, CacheStats
 from app.services import generate_reply, stream_reply
+from app.rate_limiter import rate_limit
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(dependencies=[Depends(verify_api_key)])
 
-@router.post("/chat", response_model=ChatResponse)
+@router.post("/chat", response_model=ChatResponse,dependencies=[Depends(rate_limit)])
 def chat(request: ChatRequest, http_request: Request):
     client_ip = http_request.client.host if http_request.client else "unknown"
     message_preview = request.message[:50]
