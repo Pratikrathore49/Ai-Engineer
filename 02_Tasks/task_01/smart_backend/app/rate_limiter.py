@@ -3,7 +3,8 @@ import time
 import logging
 from collections import defaultdict
 
-from fastapi import HTTPException, Request
+from app.auth import verify_api_key
+from fastapi import HTTPException, Request,Depends
 
 logger = logging.getLogger(__name__)
 
@@ -12,7 +13,7 @@ WINDOW_SECONDS = 60
 
 request_counts = defaultdict(list)
 
-def rate_limit(request:Request):
+def rate_limit(request:Request, api_key:str = Depends(verify_api_key)):
     api_key = request.state.api_key
 
     current_time = time.time()
@@ -25,8 +26,9 @@ def rate_limit(request:Request):
     ]
     # Reject if the client has already made 20 requests
     if len(request_counts[api_key]) >= MAX_REQUESTS:
-        logger.warning("Rate limit exceeded | api_key=%s | requests=%d", api_key[:4] + "...",len(request_counts[api_key]))
-        raise HTTPException(
+       safe_key_hint = api_key[:min(4, len(api_key))] + "..."
+       logger.warning("Rate limit exceeded | key_hint=%s | requests=%d",safe_key_hint,len(request_counts[api_key]))
+       raise HTTPException(
             status_code=429,
             detail="Rate limit exceeded. Try again later.",
             headers={"Retry-After":"60"}

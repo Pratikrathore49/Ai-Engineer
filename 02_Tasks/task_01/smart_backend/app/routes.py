@@ -33,7 +33,7 @@ def chat(request: ChatRequest, http_request: Request):
 
     except ValueError as e:
         logger.warning("Chat request failed | reason=not_found | detail=%s", str(e))
-        raise HTTPException(status_code=404, detail=str(e))
+        raise HTTPException(status_code=404, detail="Conversation not found")
 
     except OpenAIError as e:
         logger.error(
