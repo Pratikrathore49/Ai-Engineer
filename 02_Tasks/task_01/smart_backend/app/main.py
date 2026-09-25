@@ -12,6 +12,7 @@ from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from fastapi import HTTPException
 
+from app.health import health_check
 from app.routes import router
 from app.exception_handlers import(http_exception_handler,validation_exception_handler,
 unhandled_exception_handler)
@@ -35,4 +36,8 @@ def root():
         "message":"Smart Replay API is running"
     }
 
+@app.get("/health")
+def health():
+    return health_check()
+    
 app.include_router(router)

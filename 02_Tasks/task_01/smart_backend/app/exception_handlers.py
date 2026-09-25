@@ -31,12 +31,11 @@ async def http_exception_handler(request: Request, exc: HTTPException):
     )
 
     return JSONResponse(
-        status_code=exc.status_code,
-        content={
-            "error": error_code,
-            "detail": exc.detail
-        }
-    )
+    status_code=exc.status_code,
+    content={"error": error_code, "detail": exc.detail},
+    headers=exc.headers or {}   # ← pass through headers from the exception
+)
+
 
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     """
@@ -48,8 +47,6 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     first_error = errors[0] if errors else {}
 
     # 'loc' is a tuple like ('body', 'message') or ('body', 'conversation_id')
-    field = first_error.get("loc", ["unknown"])[-1]
-    message = first_error.get("msg", "Invalid input").replace("Value error, ", "")
 
     logger.warning(
         "Validation error | path=%s | field=%s | detail=%s",
@@ -62,7 +59,12 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         status_code=422,
         content={
             "error": "validation_error",
-            "detail": message,
+            "details":[{
+                "field":str(e.get("loc",["unknown"])[-1]),
+                "details":e.get("msg","Invalid input").replace("Value error, ","")
+            }
+            for e in errors
+            ],
             "field": str(field)
         }
     )
@@ -73,6 +75,8 @@ async def unhandled_exception_handler(request: Request, exc: Exception):
     Logs the real error internally, returns a safe message to the client.
     Never expose internal error details externally.
     """
+    if isinstance(exc, HTTPException):
+        return await http_exception_handler(request, exc)
     logger.error(
         "Unhandled exception | path=%s | error_type=%s | detail=%s",
         request.url.path,

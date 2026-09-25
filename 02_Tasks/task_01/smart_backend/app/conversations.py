@@ -3,6 +3,15 @@ import uuid
 # In-memory conversation storage
 _conversations: dict[str, list[dict[str, str]]] = {}
 
+def delete_conversation(conversation_id:str) -> None:
+    """ 
+    Delete a conversation
+    """
+    if conversation_id not in  _conversations:
+        raise KeyError(conversation_id)
+    
+    del _conversations[conversation_id]
+
 
 def create_conversation() -> str:
     """
