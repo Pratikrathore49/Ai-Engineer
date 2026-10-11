@@ -7,7 +7,7 @@ env/
 # Environment variables
 .env
 *.env
-
+radis/
 # Python cache
 __pycache__/
 *.pyc
