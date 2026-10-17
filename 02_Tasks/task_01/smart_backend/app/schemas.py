@@ -1,7 +1,7 @@
 import uuid as uuid_module
 from pydantic import BaseModel, Field, field_validator
 
-class CacheRequest(BaseModel):
+class ChatRequest(BaseModel):
     message: str = Field(
         ...,
         min_length=1,

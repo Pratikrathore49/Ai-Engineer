@@ -22,6 +22,8 @@ logger = logging.getLogger(__name__)
 REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
 REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
 REDIS_DB   = int(os.getenv("REDIS_DB",   "0"))
+REDIS_USERNAME = os.getenv("REDIS_USERNAME", "default")
+REDIS_PASSWORD = os.getenv("REDIS_PASSWORD")
 
 # ------------------------------------------------------------------ #
 #  Build the client                                                   #
@@ -33,6 +35,8 @@ redis_client = redis.Redis(
     host=REDIS_HOST,
     port=REDIS_PORT,
     db=REDIS_DB,
+    username=REDIS_USERNAME,
+    password=REDIS_PASSWORD,
     decode_responses=True,      # all responses come back as str, not bytes
     socket_connect_timeout=5,   # fail fast if Redis is not reachable
     socket_timeout=5,           # per-command timeout

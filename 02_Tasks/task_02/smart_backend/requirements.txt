@@ -1,7 +1,10 @@
-
 fastapi==0.111.0
 uvicorn==0.30.1
-openai
+openai==1.57.0
+httpx==0.27.2
 python-dotenv==1.0.1
-redis
 pydantic==2.8.2
+redis==5.0.8
+sqlalchemy==2.0.31
+psycopg2-binary==2.9.9
+pgvector==0.3.2

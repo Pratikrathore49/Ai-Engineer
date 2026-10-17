@@ -4,7 +4,9 @@
 # so the server refuses to start if Redis is unreachable.
 
 from dotenv import load_dotenv
-load_dotenv()
+# Prefer this project's configuration over stale variables inherited from
+# an older local Docker/PostgreSQL setup.
+load_dotenv(override=True)
 
 from app.logger import setup_logging
 setup_logging()
@@ -25,29 +27,34 @@ from app.exception_handlers import (
     validation_exception_handler,
 )
 from app.health import health_check
+from app.db import verify_db_connection
 from app.redis_client import verify_redis_connection
 from app.routes import router
 
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # ── Startup ──────────────────────────────────────────────────────
-    # Fail fast: if Redis is down the server exits here with a clear error
-    # instead of silently starting and failing on the first request.
     try:
         verify_redis_connection()
     except redis.ConnectionError:
         logger.critical(
-            "Startup aborted — Redis is not reachable. "
-            "Run: docker run -d --name redis-dev -p 6379:6379 redis:7-alpine"
+            "Startup aborted - Redis is not reachable. "
+            "Run: docker compose up -d"
         )
-        raise   # re-raise causes uvicorn to exit non-zero
+        raise
+    try:
+        verify_db_connection()
+    except Exception:
+        logger.critical(
+            "Startup aborted - PostgreSQL is not reachable. "
+            "Run: docker compose up -d"
+        )
+        raise
 
-    logger.info("Smart Reply API v2 started | backend=Redis | ready to accept requests")
+    logger.info(
+        "Smart Reply API v2 started | backend=Redis+Postgresql | ready"
+    )
     yield
-    # ── Shutdown ─────────────────────────────────────────────────────
     logger.info("Smart Reply API shutting down")
-
 
 app = FastAPI(
     title="Smart Reply API",
