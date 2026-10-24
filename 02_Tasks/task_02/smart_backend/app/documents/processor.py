@@ -30,8 +30,9 @@ def extract_text(file_bytes: bytes, file_type: str) -> str:
     Raises:
         HTTPException 400 for unsupported file types or extraction errors
     """
+    print(f"checking file_type before {file_type}")
     file_type = file_type.lower().strip(".")
-
+    print(f"checking file_type after {file_type}")
     if file_type not in SUPPORTED_TYPES:
         raise HTTPException(
             status_code=400,

@@ -16,6 +16,7 @@
 #   Separation of concerns — each file has one job.
 
 import logging
+from sqlalchemy import text
 
 from app.db import Base, get_engine
 # Importing models is REQUIRED even though we don't use them directly.
@@ -23,7 +24,7 @@ from app.db import Base, get_engine
 # has been defined (i.e., its module imported).
 # If we don't import models here, Base.metadata.create_all() would
 # create zero tables because it doesn't know they exist yet.
-from app.models import ChunkEmbedding, Document, DocumentChunk  # noqa: F401
+from app.documents.models import ChunkEmbedding, Document, DocumentChunk  # noqa: F401
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +42,16 @@ def run_migrations() -> None:
         # that inherits from Base. create_all() issues CREATE TABLE IF
         # NOT EXISTS for each one.
         Base.metadata.create_all(bind=engine)
-
+    # Add content column to documents if it doesn't exist yet.
+        # WHY raw SQL here?
+        #   create_all() never alters existing tables — it only creates
+        #   missing ones. For adding a column to an existing table we need
+        #   ALTER TABLE. "IF NOT EXISTS" makes it safe to run every startup.
+        with engine.connect() as conn:
+            conn.execute(text(
+                "ALTER TABLE documents ADD COLUMN IF NOT EXISTS content TEXT"
+            ))
+            conn.commit()
         logger.info(
             "Database migrations complete | tables=%s",
             list(Base.metadata.tables.keys()),

@@ -106,6 +106,7 @@ async def upload_document(
         file_size_bytes=file_size,
         status="processing",
         created_at=datetime.now(timezone.utc),
+        content=extracted_text
     )
     db.add(document)
     db.commit()

@@ -16,6 +16,7 @@ class DocumentBase(BaseModel):
 class DocumentUploadResponse(DocumentBase):
     """Response returned after uploading a document."""
     document_id: UUID
+    # content: str
 
 
 class DocumentListItem(DocumentBase):

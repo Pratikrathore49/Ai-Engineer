@@ -1,7 +1,7 @@
 # app/models.py
 #
 # SQLAlchemy ORM models — one class = one database table.
-#
+# with a different model without to
 # WHY ORM MODELS INSTEAD OF RAW SQL?
 #   With raw SQL you'd write CREATE TABLE manually, handle types yourself,
 #   and have no Python object to work with.
@@ -22,7 +22,7 @@
 #                        embedding model produced)
 #
 #   Keeping embeddings in a separate table lets you re-embed chunks
-#   with a different model without touching the chunk text, and lets
+#  uching the chunk text, and lets
 #   you store multiple embeddings per chunk (different models).
 
 import uuid
@@ -68,6 +68,12 @@ class Document(Base):
         # WHY a string and not an Enum?
         #   Simple strings are easier to extend later without a DB migration.
         #   For strict validation use Python Enum in the service layer.
+    )
+    content: Mapped[str] = mapped_column(
+        Text, nullable=True
+        #Stores the full extracted text of the document.
+        # nullable = True so old rows without content don't break.
+        #task 17 (chunking) reads this column to split 
     )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
