@@ -28,3 +28,10 @@ def setup_logging() -> None:
     logging.getLogger("openai").setLevel(logging.WARNING)
     logging.getLogger("uvicorn.access").setLevel(logging.WARNING)
     logging.getLogger("redis").setLevel(logging.WARNING)
+    
+    # Sentence Transformers and Hugging Face
+    logging.getLogger("sentence_transformers").setLevel(logging.WARNING)
+    logging.getLogger("transformers").setLevel(logging.WARNING)
+    logging.getLogger("huggingface_hub").setLevel(logging.WARNING)
+    logging.getLogger("urllib3").setLevel(logging.WARNING)
+    logging.getLogger("filelock").setLevel(logging.WARNING)

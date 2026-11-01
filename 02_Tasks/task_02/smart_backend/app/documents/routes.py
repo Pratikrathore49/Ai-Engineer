@@ -14,6 +14,8 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, UploadFile
 from sqlalchemy.orm import Session
 
+from fastapi import BackgroundTasks
+from app.documents.indexer import index_document
 from app.auth import verify_api_key
 from app.core.db import get_db
 from app.documents.processor import extract_text
@@ -46,6 +48,7 @@ def _get_extension(filename: str) -> str:
 @router.post("/upload", response_model=DocumentUploadResponse, status_code=201)
 async def upload_document(
     file: UploadFile,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
 ):
     """
@@ -116,6 +119,10 @@ async def upload_document(
         "Document saved | document_id=%s | filename=%s",
         document.id, document.filename,
     )
+    #Queue indexing to run After this response is sent.
+    #user gets status="processing" immediately.
+    #BAckground task runs chunking + embedding independently
+    background_tasks.add_task(index_document, document.id)
 
     return DocumentUploadResponse(
         document_id=document.id,

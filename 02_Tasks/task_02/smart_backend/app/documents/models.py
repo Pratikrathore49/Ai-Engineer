@@ -34,6 +34,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base
+from app.documents.embedder import EMBEDDING_DIMENSIONS
 
 # ── Helper: generate a UUID string ────────────────────────────────
 def _uuid() -> str:
@@ -166,18 +167,17 @@ class ChunkEmbedding(Base):
         nullable=False,
     )
     embedding = mapped_column(
-        Vector(1536),
+        Vector(EMBEDDING_DIMENSIONS),
         nullable=False,
-        # WHY Vector(1536)?
-        #   1536 is the output dimension of OpenAI's text-embedding-3-small
-        #   and text-embedding-ada-002 models — the most commonly used
-        #   embedding models. Each chunk becomes a list of 1536 floats.
-        #   pgvector stores this natively and can do similarity search on it.
+        # EMBEDDING_DIMENSIONS is read from embedder.py which reads
+        # EMBEDDING_PROVIDER from .env:
+        #   local  → 384  (all-MiniLM-L6-v2)
+        #   openai → 1536 (text-embedding-3-small)
         #
-        # WHY NOT Mapped[list[float]]?
-        #   pgvector's Vector type is not a standard Python type, so
-        #   SQLAlchemy's Mapped[] annotation doesn't know about it.
-        #   We use plain mapped_column() without Mapped[] here.
+        # ⚠️  If you change EMBEDDING_PROVIDER you must drop and recreate
+        #     this table — the vector size is fixed at table creation time.
+        #     Run: docker compose down -v && docker compose up -d
+        #     then restart the app to recreate tables with the new dimension.
     )
     model: Mapped[str] = mapped_column(
         String(100), nullable=False
