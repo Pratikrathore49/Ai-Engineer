@@ -6,12 +6,12 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from openai import OpenAIError
 
-from app.auth import verify_api_key
-from app.cache import get_cache_stats
-from app.conversations import get_conversation
-from app.rate_limiter import rate_limit
-from app.schemas import CacheStats, ChatRequest, ChatResponse
-from app.services import generate_reply, stream_reply
+from app.core.auth import verify_api_key
+from app.core.cache import get_cache_stats
+from app.core.conversations import get_conversation
+from app.core.rate_limiter import rate_limit
+from app.chat.schemas import CacheStats, ChatRequest, ChatResponse
+from app.chat.services import generate_reply, stream_reply
 
 logger = logging.getLogger(__name__)
 

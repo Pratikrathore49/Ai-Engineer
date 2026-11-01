@@ -8,10 +8,10 @@ from fastapi import status
 from fastapi.responses import JSONResponse
 from openai import OpenAI
 
-from app.auth import VALID_API_KEYS
-from app.conversations import create_conversation, delete_conversation, get_conversation
-from app.llm import GROQ_API_KEY, GROQ_BASE_URL, GROQ_MODEL
-from app.redis_client import redis_client
+from app.core.auth import VALID_API_KEYS
+from app.core.conversations import create_conversation, delete_conversation, get_conversation
+from app.chat.llm import GROQ_API_KEY, GROQ_BASE_URL, GROQ_MODEL
+from app.core.redis_client import redis_client
 
 logger = logging.getLogger(__name__)
 

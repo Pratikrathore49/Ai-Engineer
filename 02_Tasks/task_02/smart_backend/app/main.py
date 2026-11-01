@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 # an older local Docker/PostgreSQL setup.
 load_dotenv(override=True)
 
-from app.logger import setup_logging
+from app.core.logger import setup_logging
 setup_logging()
 
 import logging
@@ -21,18 +21,18 @@ from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from fastapi import HTTPException
 
-from app.exception_handlers import (
+from app.core.exception_handlers import (
     http_exception_handler,
     unhandled_exception_handler,
     validation_exception_handler,
 )
-from app.health import health_check
-from app.db import verify_db_connection
+from app.core.health import health_check
+from app.core.db import verify_db_connection
 from app.migrations import run_migrations
 from app.documents.routes import router as documents_router
 
-from app.redis_client import verify_redis_connection
-from app.routes import router
+from app.core.redis_client import verify_redis_connection
+from app.chat.routes import router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

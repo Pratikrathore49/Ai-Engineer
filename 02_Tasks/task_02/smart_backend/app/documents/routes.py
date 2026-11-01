@@ -16,7 +16,7 @@ from sqlalchemy.orm import Session
 
 from fastapi import BackgroundTasks
 from app.documents.indexer import index_document
-from app.auth import verify_api_key
+from app.core.auth import verify_api_key
 from app.core.db import get_db
 from app.documents.processor import extract_text
 from app.documents.schemas import (

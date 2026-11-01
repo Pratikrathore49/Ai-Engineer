@@ -22,8 +22,8 @@ import logging
 
 import redis
 
-from app.redis_client import redis_client
-from app.schemas import ChatResponse
+from app.core.redis_client import redis_client
+from app.chat.schemas import ChatResponse
 
 logger = logging.getLogger(__name__)
 

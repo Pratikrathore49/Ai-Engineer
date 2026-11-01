@@ -18,7 +18,7 @@
 import logging
 from sqlalchemy import text
 
-from app.db import Base, get_engine
+from app.core.db import Base, get_engine
 # Importing models is REQUIRED even though we don't use them directly.
 # WHY? Base.metadata only knows about a model after that model's class
 # has been defined (i.e., its module imported).

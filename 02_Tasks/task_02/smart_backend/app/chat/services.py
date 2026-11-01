@@ -2,11 +2,11 @@
 
 import logging
 
-from app.cache import get_cached_response, set_cached_response
-from app.conversations import add_message, create_conversation, get_conversation
-from app.llm import generate_final_llm_response, generate_llm_response, stream_llm_response
-from app.schemas import ChatRequest, ChatResponse
-from app.tools import execute_tool
+from app.core.cache import get_cached_response, set_cached_response
+from app.core.conversations import add_message, create_conversation, get_conversation
+from app.chat.llm import generate_final_llm_response, generate_llm_response, stream_llm_response
+from app.chat.schemas import ChatRequest, ChatResponse
+from app.chat.tools import execute_tool
 
 logger = logging.getLogger(__name__)
 

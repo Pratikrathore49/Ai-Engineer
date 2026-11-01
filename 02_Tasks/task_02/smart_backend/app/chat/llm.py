@@ -5,8 +5,8 @@ import os
 
 from openai import OpenAI, OpenAIError
 
-from app.prompts import SYSTEM_PROMPT
-from app.tools import TOOLS
+from app.chat.prompts import SYSTEM_PROMPT
+from app.chat.tools import TOOLS
 
 logger = logging.getLogger(__name__)
 
