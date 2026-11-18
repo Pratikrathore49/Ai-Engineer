@@ -25,6 +25,8 @@ from app.documents.schemas import (
     DocumentUploadResponse,
 )
 from app.documents.models import Document, DocumentChunk
+from app.documents.retriever import retrieve_chunks
+from app.documents.schemas import SearchRequest, SearchResponse
 
 logger = logging.getLogger(__name__)
 
@@ -179,4 +181,24 @@ def get_document(document_id: str, db: Session = Depends(get_db)):
         status=document.status,
         created_at=document.created_at,
         chunk_count=chunk_count,
+    )
+
+@router.post("/search", response_model=SearchResponse)
+def search_documents(request: SearchRequest, db: Session = Depends(get_db)):
+    logger.info(
+        "Search request | query_preview='%s' | document_id=%s | top_k=%d",
+        request.query[:50], request.document_id, request.top_k,
+    )
+
+    results = retrieve_chunks(
+        query=request.query,
+        db=db,
+        document_id=request.document_id,
+        top_k=request.top_k,
+    )
+
+    return SearchResponse(
+        query=request.query,
+        results=results,
+        total_results=len(results),
     )
