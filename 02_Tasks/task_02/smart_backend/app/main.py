@@ -30,6 +30,7 @@ from app.core.health import health_check
 from app.core.db import verify_db_connection
 from app.migrations import run_migrations
 from app.documents.routes import router as documents_router
+from app.rag.routes import router as rag_router
 
 from app.core.redis_client import verify_redis_connection
 from app.chat.routes import router
@@ -85,4 +86,5 @@ def health():
 
 
 app.include_router(router)
+app.include_router(rag_router)
 app.include_router(documents_router)

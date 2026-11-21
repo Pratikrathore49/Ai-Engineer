@@ -166,7 +166,7 @@ def retrieve_chunks(
 
         results.append(
             RetrievedChunk(
-                chunk_id=row.chunk_id,
+                chunk_id=str(row.chunk_id),
                 content=row.content,
                 filename=row.filename,
                 chunk_index=row.chunk_index,
