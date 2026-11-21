@@ -11,9 +11,8 @@ from app.chat.tools import TOOLS
 logger = logging.getLogger(__name__)
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-GROQ_BASE_URL = "https://api.groq.com/openai/v1"
-# GROQ_MODEL = "llama-3.3-70b-versatile"
-GROQ_MODEL="openai/gpt-oss-120b"
+GROQ_BASE_URL = os.getenv("GROQ_BASE_URL")
+GROQ_MODEL = os.getenv("openai/gpt-oss-120b")
 
 client = OpenAI(api_key=GROQ_API_KEY, base_url=GROQ_BASE_URL)
 
@@ -44,7 +43,9 @@ def generate_llm_response(history: list[dict]):
     except OpenAIError as exc:
         logger.error(
             "LLM API error | model=%s | error_type=%s | detail=%s",
-            GROQ_MODEL, type(exc).__name__, str(exc),
+            GROQ_MODEL,
+            type(exc).__name__,
+            str(exc),
         )
         raise
 
@@ -72,7 +73,9 @@ def generate_final_llm_response(messages: list[dict]):
     except OpenAIError as exc:
         logger.error(
             "LLM API error (final) | model=%s | error_type=%s | detail=%s",
-            GROQ_MODEL, type(exc).__name__, str(exc),
+            GROQ_MODEL,
+            type(exc).__name__,
+            str(exc),
         )
         raise
 
@@ -94,6 +97,59 @@ def stream_llm_response(history: list[dict]):
     except OpenAIError as exc:
         logger.error(
             "LLM stream error | model=%s | error_type=%s | detail=%s",
-            GROQ_MODEL, type(exc).__name__, str(exc),
+            GROQ_MODEL,
+            type(exc).__name__,
+            str(exc),
+        )
+        raise
+
+
+def call_llm(messages: list[dict]) -> str:
+    """
+    Generic LLM call — no tools, no hardcoded system prompt.
+
+    Used by any feature that needs a plain LLM call with full control
+    over the messages list. The caller builds the messages however
+    they want (RAG grounded prompt, summarization, etc.).
+
+    WHY THIS EXISTS:
+        generate_llm_response() always prepends the chat system prompt
+        and always enables tools. That's correct for /chat endpoints
+        but wrong for RAG, summarization, or any other feature that
+        needs a custom system prompt without tools.
+        This function is the shared primitive — zero opinions about
+        what the messages contain.
+
+    Returns:
+        The assistant's reply as a plain string.
+    """
+    logger.info(
+        "Generic LLM call | model=%s | messages_count=%d",
+        GROQ_MODEL,
+        len(messages),
+    )
+
+    try:
+        response = client.chat.completions.create(
+            model=GROQ_MODEL,
+            messages=messages,
+            tool_choice="none",
+        )
+
+        logger.info(
+            "Generic LLM call complete | model=%s | input_tokens=%d | output_tokens=%d",
+            GROQ_MODEL,
+            response.usage.prompt_tokens,
+            response.usage.completion_tokens,
+        )
+
+        return response.choices[0].message.content
+
+    except OpenAIError as exc:
+        logger.error(
+            "Generic LLM call failed | model=%s | error_type=%s | detail=%s",
+            GROQ_MODEL,
+            type(exc).__name__,
+            str(exc),
         )
         raise

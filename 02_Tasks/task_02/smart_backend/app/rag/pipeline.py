@@ -34,11 +34,11 @@
 #   This is the fail-fast principle applied to RAG.
 
 import logging
-import os
 
-from openai import OpenAI, OpenAIError
 from sqlalchemy.orm import Session
+from openai import OpenAIError
 
+from app.chat.llm import call_llm
 from app.core.conversations import add_message, create_conversation
 from app.documents.retriever import retrieve_chunks
 from app.documents.schemas import RetrievedChunk
@@ -51,21 +51,6 @@ logger = logging.getLogger(__name__)
 #   chat/llm.py hardcodes tools and the chat system prompt.
 #   RAG needs NO tools and a completely different system prompt.
 #   We make a direct, clean LLM call here with full control.
-GROQ_BASE_URL = "https://api.groq.com/openai/v1"
-GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
-
-_groq_client = None
-
-
-def _get_groq_client() -> OpenAI:
-    """Return a cached Groq client. Reads GROQ_API_KEY from env."""
-    global _groq_client
-    if _groq_client is None:
-        api_key = os.getenv("GROQ_API_KEY")
-        if not api_key:
-            raise RuntimeError("GROQ_API_KEY is not set in .env")
-        _groq_client = OpenAI(api_key=api_key, base_url=GROQ_BASE_URL)
-    return _groq_client
 
 
 def _build_system_prompt(chunks: list[RetrievedChunk]) -> str:
@@ -211,38 +196,25 @@ def ask(
     ]
 
     # ── Step 6: Call the LLM ──────────────────────────────────────
+    # response = client.chat.completions.create(
+    #     model=GROQ_MODEL,
+    #     messages=messages,
+    #     # WHY tool_choice="none"?
+    #     #   RAG doesn't use tools. The LLM should only read the
+    #     #   context and generate an answer — no function calls.
+    #     #   Explicitly disabling tools avoids accidental tool calls.
+    #     tool_choice="none",
+    # )
+    # call_llm() uses the shared Groq client from chat/llm.py.
+    # No duplicate client, no hardcoded tools, full control over messages.
     try:
-        client = _get_groq_client()
-
-        logger.info(
-            "RAG LLM call | model=%s | chunks_in_context=%d",
-            GROQ_MODEL,
-            len(chunks),
-        )
-
-        response = client.chat.completions.create(
-            model=GROQ_MODEL,
-            messages=messages,
-            # WHY tool_choice="none"?
-            #   RAG doesn't use tools. The LLM should only read the
-            #   context and generate an answer — no function calls.
-            #   Explicitly disabling tools avoids accidental tool calls.
-            tool_choice="none",
-        )
-
-        answer = response.choices[0].message.content
-
-        logger.info(
-            "RAG LLM response | model=%s | input_tokens=%d | output_tokens=%d",
-            GROQ_MODEL,
-            response.usage.prompt_tokens,
-            response.usage.completion_tokens,
-        )
+        logger.info("RAG LLM call | chunks_in_context=%d", len(chunks))
+        answer = call_llm(messages)
 
     except OpenAIError as exc:
         logger.error(
-            "RAG LLM call failed | model=%s | error=%s",
-            GROQ_MODEL,
+            "RAG LLM call failed | error_type=%s | error=%s",
+            type(exc).__name__,
             str(exc),
         )
         raise
@@ -250,8 +222,12 @@ def ask(
     # ── Step 7: Save to Redis conversation ───────────────────────
     # Saving both the question and answer lets us support follow-up
     # questions in the same conversation later.
-    add_message(conv_id, "user", question)
-    add_message(conv_id, "assistant", answer)
+    try:
+        add_message(conv_id, "user", question)
+        add_message(conv_id, "assistant", answer)
+    except Exception as exc:
+        logger.warning("Failed to save to Redis | error=%s", exc)
+    # don't re-raise — the answer is more important than the history
 
     # ── Step 8: Build sources list for the response ───────────────
     # We return which chunks were actually used so the client can
