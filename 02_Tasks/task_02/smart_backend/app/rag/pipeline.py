@@ -39,7 +39,7 @@ from sqlalchemy.orm import Session
 from openai import OpenAIError
 
 from app.chat.llm import call_llm
-from app.core.conversations import add_message, create_conversation
+from app.core.conversations import add_message, create_conversation, get_conversation
 from app.documents.retriever import retrieve_chunks
 from app.documents.schemas import RetrievedChunk
 from app.rag.schemas import RAGResponse, SourceCitation
@@ -160,9 +160,14 @@ def ask(
             "documents related to this topic, or try rephrasing your question."
         )
 
-        # Still save to conversation so the user has a record
-        add_message(conv_id, "user", question)
-        add_message(conv_id, "assistant", no_info_answer)
+        # Still save to conversation so the user has a record.
+        # Wrapped in try/except (just like Step 7) because if the user
+        # passed a wrong/nonexistent conversation_id, add_message() raises KeyError.
+        try:
+            add_message(conv_id, "user", question)
+            add_message(conv_id, "assistant", no_info_answer)
+        except Exception as exc:
+            logger.warning("Failed to save to Redis | error=%s", exc)
 
         return RAGResponse(
             answer=no_info_answer,
@@ -180,7 +185,7 @@ def ask(
     # ── Step 4: Build the grounded system prompt ──────────────────
     system_prompt = _build_system_prompt(chunks)
 
-    # ── Step 5: Build messages for the LLM call ───────────────────
+    # ──old Step 5: Build messages for the LLM call ───────────────────
     # We include conversation history so follow-up questions work.
     # The system prompt changes every call (it contains the retrieved
     # chunks) so we build it fresh each time.
@@ -190,11 +195,85 @@ def ask(
     #   Each message contains the full chunk context in the system prompt.
     #   For now we keep it simple: single turn with fresh system prompt.
     #   Multi-turn RAG with history is a natural next improvement.
+    # messages = [
+    #     {"role": "system", "content": system_prompt},
+    #     {"role": "user", "content": question},
+    # ]
+
+    # ── Step 5: Load conversation history & build messages ────────
+    # WHY load history ONLY if `conversation_id` was passed?
+    #   In Step 1, we created `conv_id = conversation_id or create_conversation()`.
+    #   We intentionally check `conversation_id` (the argument from the user),
+    #   NOT `conv_id` — because a brand-new conversation has no history yet,
+    #   so checking Redis for it would be a wasted network call.
+    history = []
+    if conversation_id:
+        try:
+            # Fetch previous turns: [{"role": "user", ...}, {"role": "assistant", ...}]
+            history = get_conversation(conversation_id)
+
+            # WHY check the last message?
+            #   Right now Step 7 saves the current question *after* the LLM call.
+            #   However, if a previous request crashed midway or another caller
+            #   already saved the user message, we don't want to send the exact
+            #   same question twice in a row.
+            #   `history[-1]` gets the last item in the list, and checking `if history`
+            #   first prevents an IndexError when the list is empty (`[]`).
+            if (
+                history
+                and history[-1].get("role") == "user"
+                and history[-1].get("content") == question
+            ):
+                # Slice everything EXCEPT the last item
+                history = history[:-1]
+
+        except KeyError:
+            # WHY catch KeyError?
+            #   Look at `conversations.py`: `get_conversation()` raises `KeyError`
+            #   when the conversation_id doesn't exist (e.g. wrong ID or expired
+            #   after 24h TTL). Instead of crashing, we treat it as a fresh start.
+            logger.debug(
+                "Conversation not found, starting fresh | conversation_id=%s",
+                conversation_id,
+            )
+            history = []
+
+        except Exception as exc:
+            # WHY also catch Exception?
+            #   `conversations.py` can raise `redis.RedisError` if Redis is down
+            #   or unreachable. Answering the user's question with fresh context
+            #   is better than failing the whole API call ("graceful degradation").
+            logger.warning(
+                "Failed to load conversation history | conversation_id=%s | error=%s",
+                conversation_id,
+                exc,
+            )
+            history = []
+
+    # Build the final message list in chronological order:
+    # 1. Fresh system prompt (contains chunks relevant to the NEW question)
+    # 2. Unpacked past messages (*history) — sliding window applied
+    # 3. Current question at the very end
+    #
+    # WHY sliding window?
+    #   Full history + chunk context can exceed the model's context window.
+    #   We keep only the last MAX_HISTORY_MESSAGES messages so long
+    #   conversations never cause a context_length_exceeded error.
+    #   The trade-off: very old turns are forgotten — acceptable for most use cases.
+    MAX_HISTORY_MESSAGES = 10  # 5 user + 5 assistant turns
+    if len(history) > MAX_HISTORY_MESSAGES:
+        logger.debug(
+            "History trimmed | original=%d | kept=%d",
+            len(history),
+            MAX_HISTORY_MESSAGES,
+        )
+        history = history[-MAX_HISTORY_MESSAGES:]
+
     messages = [
         {"role": "system", "content": system_prompt},
+        *history,
         {"role": "user", "content": question},
     ]
-
     # ── Step 6: Call the LLM ──────────────────────────────────────
     # response = client.chat.completions.create(
     #     model=GROQ_MODEL,
