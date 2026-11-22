@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+/* Custom design tokens — replaces tailwind.config.js in v4 */
+@theme {
+  --color-primary-50:  #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-500: #3b82f6;
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
+  --color-primary-900: #1e3a5f;
+
+  --color-surface:        #0f172a;
+  --color-surface-card:   #1e293b;
+  --color-surface-border: #334155;
+}
+
+/* Smooth scrolling everywhere */
+* {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar — thin and dark themed */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
