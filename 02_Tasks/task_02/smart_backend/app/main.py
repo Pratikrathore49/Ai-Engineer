@@ -4,14 +4,17 @@
 # so the server refuses to start if Redis is unreachable.
 
 from dotenv import load_dotenv
+
 # Prefer this project's configuration over stale variables inherited from
 # an older local Docker/PostgreSQL setup.
 load_dotenv(override=True)
 
 from app.core.logger import setup_logging
+
 setup_logging()
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 from contextlib import asynccontextmanager
@@ -31,9 +34,11 @@ from app.core.db import verify_db_connection
 from app.migrations import run_migrations
 from app.documents.routes import router as documents_router
 from app.rag.routes import router as rag_router
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.redis_client import verify_redis_connection
 from app.chat.routes import router
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -41,8 +46,7 @@ async def lifespan(app: FastAPI):
         verify_redis_connection()
     except redis.ConnectionError:
         logger.critical(
-            "Startup aborted - Redis is not reachable. "
-            "Run: docker compose up -d"
+            "Startup aborted - Redis is not reachable. " "Run: docker compose up -d"
         )
         raise
     try:
@@ -53,14 +57,13 @@ async def lifespan(app: FastAPI):
             "Run: docker compose up -d"
         )
         raise
-    
+
     run_migrations()
 
-    logger.info(
-        "Smart Reply API v2 started | backend=Redis+Postgresql | ready"
-    )
+    logger.info("Smart Reply API v2 started | backend=Redis+Postgresql | ready")
     yield
     logger.info("Smart Reply API shutting down")
+
 
 app = FastAPI(
     title="Smart Reply API",
@@ -68,6 +71,20 @@ app = FastAPI(
     description="Production-grade FastAPI + Redis backend",
     lifespan=lifespan,
 )
+
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://localhost:5174",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 # Register exception handlers
 app.add_exception_handler(HTTPException, http_exception_handler)
