@@ -26,23 +26,23 @@
         "noFallthroughCasesInSwitch": true,
         "baseUrl": ".",
         "paths": {
-            "@pages/*": [
-                "./src/pages/*"
+            "@app/*": [
+                "./src/app/*"
             ],
-            "@types/*": [
-                "./src/types/*"
+            "@modules/*": [
+                "./src/modules/*"
             ],
-            "@lib/*": [
-                "./src/lib/*"
+            "@shared/*": [
+                "./src/shared/*"
             ],
-            "@components/*": [
-                "./src/components/*"
+            "@infrastructure/*": [
+                "./src/infrastructure/*"
             ],
-            "@hooks/*": [
-                "./src/hooks/*"
+            "@assets/*": [
+                "./src/assets/*"
             ],
-            "@utils/*": [
-                "./src/utils/*"
+            "@styles/*": [
+                "./src/styles/*"
             ]
         }
     },

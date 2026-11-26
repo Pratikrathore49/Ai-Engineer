@@ -1,0 +1,9 @@
+/* src/styles/variables.css
+   CSS custom properties for any values not covered by Tailwind tokens.
+   Import this in globals.css if needed: @import "./variables.css";
+*/
+
+:root {
+  --sidebar-width: 240px;
+  --chat-panel-width: 320px;
+}

@@ -10,12 +10,12 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      "@pages":      path.resolve(__dirname, "./src/pages"),
-      "@lib":        path.resolve(__dirname, "./src/lib"),
-      "@types":      path.resolve(__dirname, "./src/types"),
-      "@components": path.resolve(__dirname, "./src/components"),
-      "@hooks":      path.resolve(__dirname, "./src/hooks"),
-      "@utils":      path.resolve(__dirname, "./src/utils"),
+      "@app":            path.resolve(__dirname, "./src/app"),
+      "@modules":        path.resolve(__dirname, "./src/modules"),
+      "@shared":         path.resolve(__dirname, "./src/shared"),
+      "@infrastructure": path.resolve(__dirname, "./src/infrastructure"),
+      "@assets":         path.resolve(__dirname, "./src/assets"),
+      "@styles":         path.resolve(__dirname, "./src/styles"),
     },
   },
 });
